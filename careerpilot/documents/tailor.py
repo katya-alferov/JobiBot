@@ -16,7 +16,7 @@ from docx.shared import Pt
 from sqlalchemy.orm import Session
 
 from careerpilot.config import Settings
-from careerpilot.profile.cv_parser import ParsedCV, Role, parse_docx
+from careerpilot.profile.cv_parser import ParsedCV, Role, _split_header, parse_docx
 from careerpilot.profile.service import ProfileView, _alias_pattern, make_read_only, sha256_file, vocabulary
 from careerpilot.storage.audit import audit
 from careerpilot.storage.models import JobMatch, JobPosting, ResumeChange, ResumeVariant, utcnow
@@ -61,6 +61,7 @@ class CVPlan:
     section_order: list[str]
     changes: list[ChangeEntry] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    track: str = ""
 
 
 def _relevance(text: str, skills: list[str], vocab: dict) -> int:
@@ -93,7 +94,9 @@ def build_plan(view: ProfileView, job: JobPosting, match: JobMatch | None, track
         warnings.append("LinkedIn URL not yet verified as reachable; left out of the CV")
     if p.personal_website_url and p.personal_website_verified:
         links.append(p.personal_website_url.replace("https://", "").rstrip("/"))
-    elif not p.personal_website_url:
+    elif p.personal_website_url:
+        warnings.append("Website URL not yet verified as reachable; left out of the CV")
+    else:
         warnings.append("Personal website URL not supplied yet")
     if links:
         contact = f"{contact}  |  " + "  |  ".join(links)
@@ -135,6 +138,16 @@ def build_plan(view: ProfileView, job: JobPosting, match: JobMatch | None, track
         experience.append(Role(role.title, role.organization, role.dates, role.start, role.end, ordered,
                                role.header_text))
 
+    # Candidate-confirmed roles that are not on the master CV, only for the tracks they allow.
+    for fact in _track_scoped_roles(view, track):
+        title, org, dates, start, end = _split_header(fact.value)
+        added = Role(title, org, dates, start, end, [], fact.value)
+        pos = next((i for i, r in enumerate(experience) if _sort_key(r) <= _sort_key(added)), len(experience))
+        experience.insert(pos, added)
+        changes.append(ChangeEntry("experience", "add_verified_role", "", fact.value,
+                                   f"Candidate-confirmed role, included for {TRACK_FOCUS.get(track, track)} roles only",
+                                   fact.source, material=True))
+
     # Skills: groups and items reordered; nothing added.
     groups = [(g.label, list(g.items)) for g in parsed.skills]
     if track == "marketing":
@@ -175,7 +188,24 @@ def build_plan(view: ProfileView, job: JobPosting, match: JobMatch | None, track
         courses=list(parsed.courses),
         languages_line=" | ".join(f"{lang}: {lvl}" for lang, lvl in parsed.languages),
         extra_lines=list(parsed.extra_lines), section_order=order, changes=changes, warnings=warnings,
+        track=track,
     )
+
+
+def _track_scoped_roles(view: ProfileView, track: str) -> list:
+    return [f for f in view.verified if f.category == "employment" and (f.detail or {}).get("tracks")
+            and track in f.detail["tracks"]]
+
+
+def _year(text: str | None) -> int:
+    if not text or text.lower().startswith("present"):
+        return 9999
+    m = re.search(r"(\d{4})", text)
+    return int(m.group(1)) if m else 0
+
+
+def _sort_key(role: Role) -> tuple[int, int]:
+    return (_year(role.end or role.start), _year(role.start))
 
 
 def _unconfirmed_completions(view: ProfileView) -> list[str]:
@@ -204,6 +234,12 @@ def validate_plan(plan: CVPlan, view: ProfileView) -> list[str]:
         for b in role.bullets:
             if b.strip() not in verified_values:
                 errors.append(f"bullet not verified: {b[:80]}")
+    scoped = {f.value.strip(): f.detail["tracks"] for f in view.verified
+              if f.category == "employment" and (f.detail or {}).get("tracks")}
+    for role in plan.experience:
+        allowed = scoped.get(role.header_text.strip())
+        if allowed and plan.track not in allowed:
+            errors.append(f"role limited to {allowed} used on a {plan.track} CV: {role.header_text}")
     for _, items in plan.skills:
         for item in items:
             if item not in verified_skills:
@@ -325,10 +361,10 @@ def create_variant(session: Session, settings: Settings, view: ProfileView, job:
     content_checks = {
         "opens": True,
         "name_present": reread.name.lower() == view.profile.full_name.lower(),
-        "roles_match_master": [r.header_text for r in reread.experience]
-        == [r.header_text for r in view.parsed_cv.experience],
+        "roles_match_plan": [r.header_text for r in reread.experience]
+        == [r.header_text for r in plan.experience],
         "summary_present": reread.summary.strip() == plan.summary.strip(),
-        "bullet_count_match": len(reread.all_bullets()) == len(view.parsed_cv.all_bullets()),
+        "bullet_count_match": len(reread.all_bullets()) == sum(len(r.bullets) for r in plan.experience),
     }
     pdf_path = convert_to_pdf(docx_path) if make_pdf else None
     if pdf_path:

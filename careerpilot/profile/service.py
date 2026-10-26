@@ -242,8 +242,9 @@ def apply_profile_config(session: Session, settings: Settings, profile: Candidat
         profile.linkedin_profile_url = linkedin
         profile.linkedin_profile_verified = False
     for f in cfg.get("additional_facts") or []:
+        detail = {"tracks": f["tracks"]} if f.get("tracks") else None
         _upsert_fact(session, profile, f["category"], f["key"], f["value"], f.get("status", "needs_confirmation"),
-                     f.get("source", "profile.yaml"))
+                     f.get("source", "profile.yaml"), detail)
     prefs = load_preferences(settings)
     for key, value in (prefs.get("global") or {}).items():
         _upsert_pref(session, profile.id, "global", key, value)
