@@ -157,6 +157,30 @@ def cmd_answer(settings, args):
         print(f"{app.id}: {app.status}")
 
 
+def cmd_approve(settings, args):
+    from careerpilot.applications.service import approve_application
+    from careerpilot.storage.models import Application
+
+    db = _db(settings)
+    with db.session() as s:
+        app = s.get(Application, args.app_id)
+        approve_application(s, app, args.note)
+        print(f"{app.id} approved: {app.job.title} at {app.job.employer} (CV {app.resume_variant.version_id})")
+
+
+def cmd_pending(settings, args):
+    from sqlalchemy import select
+
+    from careerpilot.storage.models import Application
+
+    db = _db(settings)
+    with db.session() as s:
+        for app in s.scalars(select(Application).where(Application.status == "READY_TO_SUBMIT",
+                                                      Application.user_approved_at.is_(None))):
+            print(f"{app.id}  {app.match_score:5.1f}  {app.track:14} {app.job.title} @ {app.job.employer}\n"
+                  f"      CV {app.resume_variant.docx_filename}\n      {app.application_url}")
+
+
 def cmd_mark_submitted(settings, args):
     from careerpilot.applications.service import record_manual_submission
     from careerpilot.storage.models import Application
@@ -273,6 +297,11 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("question")
     c.add_argument("answer")
     c.set_defaults(fn=cmd_answer)
+    sub.add_parser("pending", help="Applications waiting for your approval").set_defaults(fn=cmd_pending)
+    c = sub.add_parser("approve", help="Approve a prepared application after reviewing it")
+    c.add_argument("app_id")
+    c.add_argument("--note")
+    c.set_defaults(fn=cmd_approve)
     c = sub.add_parser("mark-submitted", help="Record that you applied manually via the official link")
     c.add_argument("app_id")
     c.add_argument("note")

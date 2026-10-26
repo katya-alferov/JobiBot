@@ -45,6 +45,7 @@ def application_record(app: Application) -> dict:
         "status": app.status,
         "status_display": display_status(app),
         "submitted_at": app.submitted_at.isoformat() if app.submitted_at else None,
+        "approved_by_you_at": app.user_approved_at.isoformat() if app.user_approved_at else None,
         "confirmed": app.status == CONFIRMED or any(a.result == "CONFIRMED" for a in real_attempts),
         "submission_method": real_attempts[-1].method if real_attempts else None,
         "source_names": sorted({lst.source.name for lst in job.listings}),

@@ -127,7 +127,21 @@ def refresh_readiness(session: Session, app: Application) -> None:
         return
     freeze_materials(session, app)
     S.transition(session, app, S.READY_TO_SUBMIT, source="system", note="Materials complete and frozen")
-    app.next_action = "Submit (automatic only when every rule passes) or apply via the official link"
+    app.next_action = ("Review and approve, or apply via the official link" if app.user_approved_at is None
+                       else "Submit (automatic only when every rule passes) or apply via the official link")
+
+
+def approve_application(session: Session, app: Application, note: str | None = None) -> None:
+    """The candidate reviewed the prepared materials and approves submitting them."""
+    if app.status != S.READY_TO_SUBMIT:
+        raise S.InvalidTransition(f"Only READY_TO_SUBMIT applications can be approved (status is {app.status})")
+    if app.user_approved_at is not None:
+        return
+    app.user_approved_at = utcnow()
+    app.user_approval_note = note
+    app.next_action = "Approved: submit via the official link (automatic only when every rule passes)"
+    audit(session, "application_approved", actor="user", entity_type="application", entity_id=app.id,
+          cv_version=app.resume_variant.version_id if app.resume_variant else None, note=note)
 
 
 def provide_answer(session: Session, app: Application, question: str, answer: str) -> None:

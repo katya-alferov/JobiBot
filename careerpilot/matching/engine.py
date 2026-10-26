@@ -53,8 +53,9 @@ def _filter(name: str, passed: bool, detail: str) -> dict:
     return {"filter": name, "passed": passed, "detail": detail}
 
 
-def hard_filters(job: JobPosting, prefs: dict, view: ProfileView) -> list[dict]:
+def hard_filters(job: JobPosting, prefs: dict, view: ProfileView, track: str | None = None) -> list[dict]:
     g = prefs.get("global") or {}
+    spec = (prefs.get("tracks") or {}).get(track or "", {}) or {}
     text = f"{job.title}\n{job.description_normalized}".lower()
     results = []
 
@@ -104,6 +105,16 @@ def hard_filters(job: JobPosting, prefs: dict, view: ProfileView) -> list[dict]:
             if re.search(rf"{re.escape(alias)}[^.\n]{{0,40}}{REQUIRED_WORDS}|{REQUIRED_WORDS}[^.\n]{{0,40}}{re.escape(alias)}", text):
                 results.append(_filter("language_requirement", False, f"requires {lang}, not on the CV"))
                 break
+
+    required = spec.get("required_seniority")
+    if required:
+        large = [e.lower() for e in spec.get("large_employers") or []]
+        is_large = any(e and e in job.employer_normalized for e in large)
+        ok = job.seniority in required or is_large
+        detail = (f"seniority {job.seniority} meets {required}" if job.seniority in required
+                  else "large employer on your list" if is_large
+                  else f"seniority {job.seniority}; this track only takes {required} roles")
+        results.append(_filter("track_seniority", ok, detail))
     return results
 
 
@@ -128,7 +139,7 @@ def score_job(job: JobPosting, track: str, view: ProfileView, prefs: dict, setti
     uncertainties: list[str] = []
     text = f"{job.title}\n{job.description_normalized}"
 
-    filters = hard_filters(job, prefs, view)
+    filters = hard_filters(job, prefs, view, track)
     eligible = all(f["passed"] for f in filters)
 
     # Skills and experience
@@ -147,7 +158,8 @@ def score_job(job: JobPosting, track: str, view: ProfileView, prefs: dict, setti
     for cert in sorted(CERTIFICATIONS & job_skills - view.skills):
         missing_reqs.append(f"certification or direct experience: {cert} (not on CV)")
     cand_years = CANDIDATE_TRACK_YEARS.get(track, 0)
-    if job.years_required and job.years_required > cand_years:
+    years_ok = spec.get("max_years_ok", cand_years)
+    if job.years_required and job.years_required > years_ok:
         missing_reqs.append(f"{job.years_required}+ years requested; about {cand_years} years directly relevant on CV")
 
     # Track alignment
@@ -204,7 +216,12 @@ def score_job(job: JobPosting, track: str, view: ProfileView, prefs: dict, setti
         uncertainties.append("location preference not set")
     location_score = sum(loc_parts) / len(loc_parts)
 
-    seniority_score, sen_note = _seniority_score(spec.get("candidate_seniority", "mid"), job.seniority)
+    if job.seniority in (spec.get("acceptable_seniority") or []):
+        seniority_score, sen_note = 1.0, None
+    else:
+        seniority_score, sen_note = _seniority_score(spec.get("candidate_seniority", "mid"), job.seniority)
+    if job.years_required and job.years_required > years_ok:
+        seniority_score = min(seniority_score, 0.4)
     if sen_note:
         uncertainties.append(sen_note)
 

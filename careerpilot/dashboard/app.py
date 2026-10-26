@@ -177,13 +177,29 @@ with db.session() as s:
 
     # ------------------------------------------------------------------ tracking
     with tab_apps:
+        pending = list(s.scalars(select(Application).where(Application.status == "READY_TO_SUBMIT",
+                                                           Application.user_approved_at.is_(None))))
+        st.subheader(f"Waiting for your approval ({len(pending)})")
+        if not pending:
+            st.caption("Nothing waiting.")
+        for p_app in pending:
+            with st.container(border=True):
+                st.markdown(f"**{p_app.job.title}** · {p_app.job.employer} · {p_app.track} · "
+                            f"match **{p_app.match_score:.0f}**")
+                st.markdown(f"CV: `{p_app.resume_variant.docx_filename}` · "
+                            f"[official link]({p_app.application_url or p_app.job.official_application_url})")
+                if st.button("Approve", key=f"approve-{p_app.id}"):
+                    from careerpilot.applications.service import approve_application
+
+                    approve_application(s, p_app, "approved in the dashboard")
+                    st.success("Approved.")
         status_filter = st.multiselect("Status", ALL_STATUSES)
         text_filter = st.text_input("Search employer or title", key="app_search")
         records = [application_record(a) for a in s.scalars(select(Application).order_by(Application.created_at.desc()))]
         records = [r for r in records if (not status_filter or r["status"] in status_filter)
                    and (not text_filter or text_filter.lower() in f"{r['employer']} {r['job_title']}".lower())]
-        table = [{k: r[k] for k in ("application_id", "employer", "job_title", "career_track", "status_display",
-                                     "submitted_at", "confirmed", "cv_version_id", "next_action")}
+        table = [{k: r[k] for k in ("application_id", "employer", "job_title", "career_track", "match_score",
+                                     "status_display", "submitted_at", "confirmed", "cv_filename", "next_action")}
                  | {"simulated only": all(a["simulated"] for a in r["attempts"]) if r["attempts"] else None}
                  for r in records]
         st.dataframe(pd.DataFrame(table), use_container_width=True)

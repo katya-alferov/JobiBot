@@ -10,6 +10,7 @@ from careerpilot.applications import state as S
 from careerpilot.applications.adapters import MockApplicationAdapter
 from careerpilot.applications.gate import authorize
 from careerpilot.applications.service import (
+    approve_application,
     mark_job_verified,
     prepare_application,
     provide_answer,
@@ -28,10 +29,13 @@ from careerpilot.storage.models import (
 from tests.conftest import job_by_source_id
 
 
-def _ready_app(s, settings, sid="S-100"):
+def _ready_app(s, settings, sid="S-100", approve=True):
     job = job_by_source_id(s, sid)
     mark_job_verified(s, job, "checked on the employer site")
-    return prepare_application(s, settings, load_profile_view(s, settings), job)
+    app = prepare_application(s, settings, load_profile_view(s, settings), job)
+    if approve and app.status == S.READY_TO_SUBMIT:
+        approve_application(s, app, "test approval")
+    return app
 
 
 LIVE = dict(dry_run=False, submissions_kill_switch=False)
@@ -316,3 +320,18 @@ def test_audit_scrubs_secrets(db):
         ev = audit(s, "login_attempt", password="hunter2", details={"session_cookie": "abc"}, ok=True)
         assert ev.details["password"] == "[redacted]"
         assert ev.details["details"]["session_cookie"] == "[redacted]"
+
+
+def test_submission_waits_for_the_candidates_approval(ingested_db, make_settings):
+    settings = make_settings(**LIVE)
+    adapter = MockApplicationAdapter("confirm")
+    with ingested_db.session() as s:
+        app = _ready_app(s, settings, approve=False)
+        decision = authorize(s, settings, app, adapter)
+        assert not decision.real_submission_allowed
+        assert any(c.name == "user_approved" and not c.passed for c in decision.checks)
+        att = submit_application(s, settings, app, [adapter])
+        assert att.result == "NOT_AUTHORIZED" and adapter.submit_calls == 0
+        approve_application(s, app, "looks good")
+        assert app.user_approved_at and app.user_approval_note == "looks good"
+        assert authorize(s, settings, app, adapter).real_submission_allowed
