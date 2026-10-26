@@ -1,0 +1,33 @@
+[project]
+name = "careerpilot-israel"
+version = "0.1.0"
+description = "Personal, zero-cost job search and application tracking for the Israeli job market"
+requires-python = ">=3.12"
+dependencies = [
+    "SQLAlchemy>=2.0",
+    "alembic>=1.13",
+    "pydantic>=2.6",
+    "python-dotenv>=1.0",
+    "PyYAML>=6.0",
+    "httpx>=0.27",
+    "python-docx>=1.1",
+    "streamlit>=1.35",
+    "pandas>=2.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+careerpilot = "careerpilot.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["careerpilot*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

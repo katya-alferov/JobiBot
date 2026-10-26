@@ -1,0 +1,70 @@
+# Candidate preferences. null means "not supplied yet": the system treats it as unknown and
+# never assumes a value. Hard exclusions always override match scores.
+
+global:
+  min_monthly_salary_ils: null
+  acceptable_locations: null          # e.g. ["Tel Aviv", "Ramat Gan", "Rosh HaAyin"]
+  max_commute_minutes: null
+  max_office_days_per_week: null
+  work_arrangements: null             # any of: remote, hybrid, onsite
+  employment_types: null              # any of: full_time, part_time, contract, freelance
+  excluded_employers: []
+  excluded_keywords: []               # role types or industries to always exclude
+  required_languages_known: ["Hebrew", "English", "Russian"]   # from master CV
+  max_daily_applications: 5
+  # System defaults (not candidate preferences): thresholds for recommending a job.
+  apply_threshold: 70
+  review_threshold: 50
+
+tracks:
+  data_bi:
+    label: "Data, DWH & BI"
+    enabled: true
+    candidate_seniority: mid          # assessment from the master CV
+    title_keywords: [etl, dwh, "data warehouse", bi developer, "bi analyst", "business intelligence",
+                     "data analyst", "sql developer", "data quality", "data governance", reporting,
+                     "analytics engineer", "data operations", dataops, "data engineer", informatica,
+                     "מפתח etl", "מפתחת etl", "אנליסט", "אנליסטית", "מפתח bi", "מפתחת bi", "דאטה", "מחסן נתונים"]
+    preferred_skills: [informatica, sql, oracle, pl/sql, sql server, teradata, control-m,
+                       businessobjects, power bi, tableau, dwh, etl, data validation]
+    weights: {skills: 35, track: 25, conditions: 15, location: 15, seniority: 10}
+  grc_security:
+    label: "GRC & Information Security"
+    enabled: true
+    candidate_seniority: junior       # transferable experience only; no direct security role on CV
+    title_keywords: [grc, "information security", "security compliance", "iso 27001", "it risk",
+                     "technology risk", "cyber risk", "data privacy", "security governance",
+                     "security analyst", "compliance analyst", "אבטחת מידע", "סייבר", "ציות", "סיכונים"]
+    preferred_skills: [iso 27001, risk assessment, compliance, sql, data validation, documentation,
+                       audit, policies, nist, gdpr]
+    weights: {skills: 30, track: 20, conditions: 15, location: 15, seniority: 20}
+  ai_automation:
+    label: "AI & Automation"
+    enabled: true
+    candidate_seniority: junior
+    title_keywords: ["ai operations", "ai analyst", "ai automation", "ai business analyst",
+                     "workflow automation", "automation specialist", "business process automation",
+                     "ai marketing", "genai", "generative ai", "prompt", "no-code", "low-code",
+                     "בינה מלאכותית", "אוטומציה"]
+    preferred_skills: [generative ai, prompt engineering, ai agents, python, sql, automation,
+                       business process analysis, jira]
+    weights: {skills: 35, track: 25, conditions: 15, location: 15, seniority: 10}
+  marketing:
+    label: "Marketing & Commercial"
+    enabled: true
+    candidate_seniority: mid          # assessment from the master CV; senior level unverified
+    title_keywords: [marketing, growth, "performance marketing", "digital marketing", "marketing automation",
+                     "marketing operations", "marketing analytics", martech, "b2b marketing", seo, ppc,
+                     "content marketing", "שיווק", "מנהל שיווק", "מנהלת שיווק", "שיווק דיגיטלי"]
+    preferred_skills: [google analytics, google search console, meta ads, seo, ppc, wordpress,
+                       elementor, a/b testing, kpi reporting, content strategy, email marketing,
+                       social media]
+    weights: {skills: 30, track: 20, conditions: 15, location: 15, seniority: 20}
+  other:
+    label: "Other adjacent roles"
+    enabled: true
+    candidate_seniority: mid
+    title_keywords: ["business analyst", "system analyst", "product analyst", "operations analyst",
+                     "implementation", "solutions", "מנתח מערכות", "מנתחת מערכות"]
+    preferred_skills: [sql, business process analysis, documentation, stakeholder management]
+    weights: {skills: 35, track: 25, conditions: 15, location: 15, seniority: 10}

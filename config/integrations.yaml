@@ -1,0 +1,79 @@
+# Every external integration the app knows about. The startup check refuses to run if an
+# enabled integration is not free, needs payment details, or is a trial.
+# cost: free | paid | trial | unknown
+integrations:
+  synthetic_fixtures:
+    kind: source
+    enabled: true
+    cost: free
+    access: Local JSON files bundled with the project.
+  manual_import:
+    kind: source
+    enabled: true
+    cost: free
+    access: Jobs you paste or save yourself (URL, text, JSON or CSV).
+  alert_email_import:
+    kind: source
+    enabled: true
+    cost: free
+    access: .eml files from job alerts you subscribed to yourself. No mailbox login.
+  greenhouse_public_board:
+    kind: source
+    enabled: true
+    cost: free
+    access: Public read-only job board API (boards-api.greenhouse.io), no key. Per-employer board token.
+  lever_public_postings:
+    kind: source
+    enabled: true
+    cost: free
+    access: Public read-only postings API (api.lever.co/v0/postings), no key. Per-employer slug.
+  linkedin_jobs:
+    kind: source
+    enabled: false
+    cost: free
+    automation_permitted: false
+    access: Terms prohibit scraping and automation. Use job-alert emails or manual import.
+  indeed:
+    kind: source
+    enabled: false
+    cost: free
+    automation_permitted: false
+    access: Public API discontinued; terms restrict scraping. Use alert emails or manual import.
+  alljobs:
+    kind: source
+    enabled: false
+    cost: free
+    automation_permitted: false
+    access: No known free public API; automation terms not yet verified. Manual or alert import.
+  drushim:
+    kind: source
+    enabled: false
+    cost: free
+    automation_permitted: false
+    access: No known free public API; automation terms not yet verified. Manual or alert import.
+  jobmaster:
+    kind: source
+    enabled: false
+    cost: free
+    automation_permitted: false
+    access: No known free public API; automation terms not yet verified. Manual or alert import.
+  mock_application_adapter:
+    kind: application
+    enabled: true
+    cost: free
+    access: Simulated submissions for testing. Never contacts a real employer.
+  assisted_manual_application:
+    kind: application
+    enabled: true
+    cost: free
+    access: Prepares documents and the official link; you submit yourself.
+  local_llm_ollama:
+    kind: model
+    enabled: false
+    cost: free
+    access: Optional. Runs on your own computer only. Not required for any feature.
+  paid_llm_api:
+    kind: model
+    enabled: false
+    cost: paid
+    access: Not supported. Listed only so the guard can prove it stays off.
