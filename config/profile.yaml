@@ -1,0 +1,49 @@
+# Candidate profile settings. Facts come from the master CV; this file holds only links and
+# facts that are NOT on the master CV and therefore need the candidate's confirmation.
+
+# Exact URLs supplied by the candidate. Leave empty until verified. Never guess.
+personal_website_url: "https://katya-alferov.github.io/"   # confirmed by the candidate on 2026-10-26
+linkedin_profile_url: "https://www.linkedin.com/in/katya-alferov-4a4ab3133"   # supplied by the candidate on 2026-10-25
+
+# Facts from the project brief or the personal website that are not on the master CV.
+# status: needs_confirmation | verified | rejected. Only "verified" facts may appear in documents.
+additional_facts:
+  - category: employment
+    key: dream-bikinis
+    # Written as a CV role header: "Title | Organization  (dates)". Wording from the personal website.
+    value: "Founder & Owner | Dream Bikinis (swimwear brand)  (2017 - 2021)"
+    status: verified
+    tracks: [marketing]               # marketing CVs only, never development CVs
+    source: "confirmed by the candidate on 2026-10-26 (title and dates from the personal website)"
+  - category: marketing
+    key: b2b-consignment
+    value: "B2B consignment arrangements with retail stores (swimwear brand)"
+    status: needs_confirmation
+    source: "project brief, 2026-10-25 (not on master CV)"
+  - category: education
+    key: psychology-completion
+    value: "B.A. Psychology, The Open University: completed"
+    status: verified
+    source: "confirmed by the candidate on 2026-10-26"
+  - category: experience
+    key: partner-financial-reconciliation
+    value: "Source-to-target validation, financial data checks, record-count and amount reconciliation at Partner"
+    status: needs_confirmation
+    source: "project brief (master CV says: testing and validation, SQL for validation)"
+  - category: experience
+    key: partner-dwh
+    value: "Data warehouse work with multiple source systems at Partner"
+    status: needs_confirmation
+    source: "project brief (master CV places DWH environment at Isracard)"
+  - category: marketing
+    key: ad-budget-size
+    value: "Size of advertising budgets managed (CV says 'large budgets', no figure)"
+    status: needs_confirmation
+    source: "master CV wording; no figure available"
+
+# Questions the candidate has not answered yet. The system will not answer these on the candidate's behalf.
+unanswered:
+  - work_authorization
+  - notice_period
+  - salary_expectation
+  - availability_start_date
