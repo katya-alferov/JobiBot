@@ -102,3 +102,35 @@ def test_rematch_keeps_history(ingested_db, settings):
         s.refresh(job)
         assert len(job.matches) > before
         assert sum(m.is_latest for m in job.matches) == len({m.track for m in job.matches if m.is_latest})
+
+
+def test_marketing_only_takes_senior_roles_unless_large_employer(ingested_db, settings):
+    prefs_path = settings.config_dir / "preferences.yaml"
+    prefs = yaml.safe_load(prefs_path.read_text())
+    prefs["tracks"]["marketing"]["required_seniority"] = ["head"]
+    prefs_path.write_text(yaml.safe_dump(prefs, allow_unicode=True))
+    with ingested_db.session() as s:
+        view = load_profile_view(s, settings)
+        job = job_by_source_id(s, "S-104")
+        r = score_job(job, "marketing", view, load_preferences(settings), settings)
+        assert any(f["filter"] == "track_seniority" and not f["passed"] for f in r.hard_filters)
+        assert r.recommendation == "reject"
+        prefs["tracks"]["marketing"]["large_employers"] = ["example fashion"]
+        prefs_path.write_text(yaml.safe_dump(prefs, allow_unicode=True))
+        r = score_job(job, "marketing", view, load_preferences(settings), settings)
+        assert all(f["passed"] for f in r.hard_filters if f["filter"] == "track_seniority")
+
+
+def test_data_bi_accepts_roles_asking_up_to_five_years(ingested_db, settings):
+    with ingested_db.session() as s:
+        view = load_profile_view(s, settings)
+        job = job_by_source_id(s, "S-100")
+        prefs = load_preferences(settings)
+        assert prefs["global"]["apply_threshold"] == 80
+        job.years_required = 5
+        five = score_job(job, "data_bi", view, prefs, settings)
+        job.years_required = 8
+        eight = score_job(job, "data_bi", view, prefs, settings)
+        s.rollback()
+        assert five.component_scores["seniority"] == 1.0
+        assert eight.component_scores["seniority"] <= 0.4

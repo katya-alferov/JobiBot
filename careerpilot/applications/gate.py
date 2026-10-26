@@ -103,6 +103,13 @@ def authorize(session: Session, settings: Settings, app: Application,
 
     add("status_ready", app.status == READY_TO_SUBMIT, f"status is {app.status}")
 
+    from careerpilot.profile.service import load_preferences
+
+    if (load_preferences(settings).get("global") or {}).get("require_user_approval", True):
+        add("user_approved", app.user_approved_at is not None,
+            f"approved by you {app.user_approved_at:%Y-%m-%d %H:%M} UTC" if app.user_approved_at
+            else "waiting for your approval (careerpilot approve <id> or the dashboard)")
+
     since = utcnow() - timedelta(hours=24)
     today = session.scalar(select(func.count(ApplicationAttempt.id)).where(
         ApplicationAttempt.simulated.is_(False), ApplicationAttempt.attempted_at >= since,

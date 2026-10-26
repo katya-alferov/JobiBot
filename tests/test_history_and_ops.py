@@ -18,6 +18,7 @@ from careerpilot.applications.history import (
 )
 from careerpilot.applications.service import (
     mark_job_verified,
+    approve_application,
     prepare_application,
     record_outcome,
     submit_application,
@@ -40,6 +41,7 @@ def submitted(ingested_db, make_settings):
         job = job_by_source_id(s, "S-100")
         mark_job_verified(s, job, "test")
         app = prepare_application(s, settings, load_profile_view(s, settings), job)
+        approve_application(s, app, "test")
         submit_application(s, settings, app, [MockApplicationAdapter()])
         record_outcome(s, app, "INTERVIEW", "Screening call")
         app_id = app.id

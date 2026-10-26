@@ -300,6 +300,8 @@ class Application(TimestampMixin, Base):
     cover_letter_text: Mapped[str | None] = mapped_column(Text)
     recruiter_message_draft: Mapped[str | None] = mapped_column(Text)
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime)
+    user_approved_at: Mapped[datetime | None] = mapped_column(DateTime)
+    user_approval_note: Mapped[str | None] = mapped_column(Text)
     next_action: Mapped[str | None] = mapped_column(Text)
     next_action_due: Mapped[datetime | None] = mapped_column(DateTime)
     recruiter_contact: Mapped[str | None] = mapped_column(Text)

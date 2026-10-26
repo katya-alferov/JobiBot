@@ -12,22 +12,28 @@ global:
   excluded_keywords: []               # role types or industries to always exclude
   required_languages_known: ["Hebrew", "English", "Russian"]   # from master CV
   max_daily_applications: 5
-  # System defaults (not candidate preferences): thresholds for recommending a job.
-  apply_threshold: 70
-  review_threshold: 50
+  # Every submission waits for the candidate's explicit approval (candidate's choice, 2026-10-26).
+  require_user_approval: true
+  # Recommend applying from this score (candidate's choice, 2026-10-26).
+  apply_threshold: 80
+  review_threshold: 60
 
 tracks:
   data_bi:
     label: "Data, DWH & BI"
     enabled: true
     candidate_seniority: mid          # assessment from the master CV
+    # Candidate: about 4 years in ETL/BI; roles asking 1+ to 5+ years are all welcome.
+    acceptable_seniority: [entry, junior, mid, senior]
+    max_years_ok: 5
     title_keywords: [etl, dwh, "data warehouse", bi developer, "bi analyst", "business intelligence",
                      "data analyst", "sql developer", "data quality", "data governance", reporting,
                      "analytics engineer", "data operations", dataops, "data engineer", informatica,
                      "מפתח etl", "מפתחת etl", "אנליסט", "אנליסטית", "מפתח bi", "מפתחת bi", "דאטה", "מחסן נתונים"]
     preferred_skills: [informatica, sql, oracle, pl/sql, sql server, teradata, control-m,
                        businessobjects, power bi, tableau, dwh, etl, data validation]
-    weights: {skills: 35, track: 25, conditions: 15, location: 15, seniority: 10}
+    # ETL/BI development roles interest the candidate whatever the tools, so role fit weighs most.
+    weights: {skills: 20, track: 40, conditions: 15, location: 15, seniority: 10}
   grc_security:
     label: "GRC & Information Security"
     enabled: true
@@ -53,6 +59,9 @@ tracks:
     label: "Marketing & Commercial"
     enabled: true
     candidate_seniority: mid          # assessment from the master CV; senior level unverified
+    # Candidate: marketing only for senior roles, or highly regarded roles at large companies.
+    required_seniority: [senior, lead, manager, head]
+    large_employers: []               # employers whose marketing roles qualify at any level
     title_keywords: [marketing, growth, "performance marketing", "digital marketing", "marketing automation",
                      "marketing operations", "marketing analytics", martech, "b2b marketing", seo, ppc,
                      "content marketing", "שיווק", "מנהל שיווק", "מנהלת שיווק", "שיווק דיגיטלי"]
