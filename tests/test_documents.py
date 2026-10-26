@@ -157,3 +157,40 @@ def test_degree_with_unconfirmed_completion_is_left_out(ingested_db, settings):
         confirm_fact(s, fact.id)
         v2, _ = _variant(s, settings, "S-101")
         assert "Computer Science & Business Administration" in parse_docx(Path(v2.docx_path)).full_text
+
+
+def test_track_scoped_role_appears_only_on_allowed_tracks(ingested_db, settings):
+    from careerpilot.profile.service import _upsert_fact, get_profile
+
+    header = "Founder & Owner | Example Swim Brand (swimwear)  (2017 - 2021)"
+    with ingested_db.session() as s:
+        _upsert_fact(s, get_profile(s), "employment", "side-brand", header, "verified",
+                     "confirmed by the candidate", {"tracks": ["marketing"]})
+        s.flush()
+        mkt, _ = _variant(s, settings, "S-104")
+        roles = [r.header_text for r in parse_docx(Path(mkt.docx_path)).experience]
+        assert header in roles
+        # Placed chronologically: after the 2020 - 2021 role, before the 2017 - 2021 freelance role.
+        assert roles.index(header) == roles.index("Marketing Manager | Example Agency  (2020 - 2021)") + 1
+        added = [c for c in mkt.changes if c.change_type == "add_verified_role"]
+        assert added and added[0].material and added[0].fact_source == "confirmed by the candidate"
+        assert mkt.valid
+        data, _ = _variant(s, settings, "S-100")
+        assert "Example Swim Brand" not in parse_docx(Path(data.docx_path)).full_text
+
+
+def test_validator_rejects_scoped_role_on_wrong_track(ingested_db, settings):
+    from careerpilot.profile.cv_parser import Role
+    from careerpilot.profile.service import _upsert_fact, get_profile
+
+    header = "Founder & Owner | Example Swim Brand (swimwear)  (2017 - 2021)"
+    with ingested_db.session() as s:
+        _upsert_fact(s, get_profile(s), "employment", "side-brand", header, "verified",
+                     "confirmed by the candidate", {"tracks": ["marketing"]})
+        s.flush()
+        view = load_profile_view(s, settings)
+        job = job_by_source_id(s, "S-100")
+        plan = build_plan(view, job, best_match(s, job.id), "data_bi", settings)
+        plan.experience.append(Role("Founder & Owner", "Example Swim Brand (swimwear)", "2017 - 2021",
+                                    "2017", "2021", [], header))
+        assert any("limited to" in e for e in validate_plan(plan, view))

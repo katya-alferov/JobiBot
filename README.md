@@ -40,12 +40,11 @@ pip install -e ".[dev]"
 
 ## הגדרה ראשונית
 
-1. להעתיק את קובץ ההגדרות:
+1. להעתיק את קובץ ההגדרות הכלליות:
    ```bash
    cp .env.example .env
-   cp config/profile.example.yaml config/profile.yaml
    ```
-2. לערוך את `config/profile.yaml`: להכניס את הכתובות **המדויקות** של האתר האישי ושל LinkedIn. שדה ריק נשאר ריק עד שמאמתים אותו.
+2. הפרופיל של קטיה כבר נמצא ב-`config/profile.yaml` (כתובות האתר ו-LinkedIn ועובדות שאושרו). משתמש אחר יכול להתחיל מ-`config/profile.example.yaml`. שדה ריק נשאר ריק עד שמאמתים אותו.
 3. לבדוק שההגדרות חינמיות ובטוחות:
    ```bash
    careerpilot check
@@ -53,7 +52,7 @@ pip install -e ".[dev]"
 4. ליצור את מסד הנתונים ולייבא את קורות החיים הראשיים:
    ```bash
    careerpilot init
-   careerpilot import-cv "path/to/Katya_Alferov_CV.docx"
+   careerpilot import-cv candidate/Katya_Alferov_CV.docx
    ```
    גרסה ישנה יותר אפשר לשמור כגרסת השוואה בלבד:
    ```bash
@@ -126,7 +125,7 @@ careerpilot backup                  # data/backups/<תאריך>/
 careerpilot delete-history          # מחיקה לצמיתות, דורש הקלדת אישור
 ```
 
-כל המידע האישי (קורות חיים, מסמכים, מסד נתונים, דוחות) נשמר בתיקייה `data/`, שלא נכנסת ל-Git. גם `.env` ו-`config/profile.yaml` לא נכנסים ל-Git. **המאגר ב-GitHub ציבורי**, ולכן אין בו שום מידע אישי, והבדיקות משתמשות רק בנתונים סינתטיים.
+**המאגר ב-GitHub ציבורי.** לבקשת קטיה ובאישורה, קורות החיים הראשיים (`candidate/Katya_Alferov_CV.docx`, כולל טלפון ואימייל) והפרופיל (`config/profile.yaml`) כלולים במאגר. כל השאר נשמר רק במחשב בתיקייה `data/`, שלא נכנסת ל-Git: מסד הנתונים, היסטוריית ההגשות, קורות חיים מותאמים, דוחות וגיבויים. גם `.env` לא נכנס ל-Git. הבדיקות משתמשות רק בנתונים סינתטיים.
 
 ## בדיקות
 

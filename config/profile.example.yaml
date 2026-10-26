@@ -11,8 +11,9 @@ linkedin_profile_url: ""            # exact URL supplied by the candidate
 additional_facts:
   - category: employment
     key: example-side-business
-    value: "Founder, Example Business, 2018 - 2020"
+    value: "Founder | Example Business  (2018 - 2020)"   # a role written as a CV header line
     status: needs_confirmation
+    tracks: [marketing]               # optional: use only on CVs for these career tracks
     source: "where this fact came from (not on the master CV)"
 
 # Questions the candidate has not answered yet. The system will not answer these on the candidate's behalf.

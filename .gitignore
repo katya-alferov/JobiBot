@@ -21,5 +21,3 @@ browser-state/
 playwright/.auth/
 backups/
 
-# Personal profile settings (copy from config/profile.example.yaml)
-config/profile.yaml
