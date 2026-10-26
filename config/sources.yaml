@@ -1,0 +1,14 @@
+# Free, permitted job sources. Public ATS boards are read-only JSON endpoints that need no key.
+# Add an employer only after checking that it publishes its board publicly.
+# Manual imports: drop .json/.csv files into data/imports/. Job-alert emails: save them as .eml there.
+
+greenhouse: []
+#  - board_token: exampleco       # from https://boards.greenhouse.io/<board_token>
+#    employer: Example Co
+
+lever: []
+#  - slug: exampleco              # from https://jobs.lever.co/<slug>
+#    employer: Example Co
+
+# Demo only. Keep false for real use so synthetic jobs never mix with real ones.
+use_synthetic_fixtures: false

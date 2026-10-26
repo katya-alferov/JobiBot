@@ -1,0 +1,23 @@
+# Copy to config/profile.yaml (git-ignored) and fill in. Example entries below show the format.
+# Candidate profile settings. Facts come from the master CV; this file holds only links and
+# facts that are NOT on the master CV and therefore need the candidate's confirmation.
+
+# Exact URLs supplied by the candidate. Leave empty until verified. Never guess.
+personal_website_url: ""            # exact URL supplied by the candidate
+linkedin_profile_url: ""            # exact URL supplied by the candidate
+
+# Facts from the project brief or the personal website that are not on the master CV.
+# status: needs_confirmation | verified | rejected. Only "verified" facts may appear in documents.
+additional_facts:
+  - category: employment
+    key: example-side-business
+    value: "Founder, Example Business, 2018 - 2020"
+    status: needs_confirmation
+    source: "where this fact came from (not on the master CV)"
+
+# Questions the candidate has not answered yet. The system will not answer these on the candidate's behalf.
+unanswered:
+  - work_authorization
+  - notice_period
+  - salary_expectation
+  - availability_start_date

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# Secrets and local settings
+.env
+*.env.local
+
+# Private data: CVs, generated documents, databases, snapshots, logs, browser state
+data/*
+!data/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+logs/
+*.log
+browser-state/
+playwright/.auth/
+backups/
+
+# Personal profile settings (copy from config/profile.example.yaml)
+config/profile.yaml

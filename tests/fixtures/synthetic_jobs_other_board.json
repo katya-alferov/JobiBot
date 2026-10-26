@@ -1,0 +1,8 @@
+[
+  {"source_job_id": "B-9", "employer": "Example Telecom", "title": "Sr. ETL Developer",
+   "source_url": "https://www.job-board.example/listing/9?ref=email", "location": "Rosh HaAyin",
+   "description": "ETL developer, Informatica. Apply on the company site."},
+  {"source_job_id": "B-10", "employer": "Example Bank Ltd.", "title": "BI Developer (m/f)",
+   "source_url": "https://mock-ats.careerpilot.test/jobs/101?utm_campaign=x", "location": "Tel Aviv",
+   "description": "Short listing."}
+]
